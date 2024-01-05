@@ -1,9 +1,9 @@
-const config = require("config");
 const createServer = require("./src/utils/server");
-const port = config.get("app.port") || 3000;
 const connect = require("./src/utils/connectDB");
 const log = require("./src/utils/logger");
-connect();
+const config = require("./src/utils/config");
+connect(config.db.username, config.db.password);
+const port = config.app.port || 3000;
 // Set up routes
 const app = createServer();
 

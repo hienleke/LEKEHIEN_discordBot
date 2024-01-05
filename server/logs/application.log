@@ -1,3 +1,0 @@
-[2024-01-05T21:33:45.364] [INFO] default - Received feedback: {"comment":"Test comment 11","userId":"user1","username":"username1","channelId":"channel1","status":"resolved","statusEventTime":"2024-01-05T12:31:14.497Z"} from user user1 in channel channel1
-[2024-01-05T21:33:48.038] [INFO] default - Received feedback: {"comment":"Test comment 11","userId":"user1","username":"username1","channelId":"channel1","status":"resolved","statusEventTime":"2024-01-05T12:31:14.497Z"} from user user1 in channel channel1
-[2024-01-05T21:33:55.253] [INFO] default - Received feedback: {"comment":"Test comment 11","userId":"user1","username":"username1","channelId":"channel1","status":"resolved","statusEventTime":"2024-01-05T12:31:14.497Z"} from user user1 in channel channel1

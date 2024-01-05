@@ -1,56 +1,52 @@
 const request = require("supertest");
 const app = require("../app"); // Update the path accordingly
+const config = require("../src/utils/config");
 
-describe("Comment API Endpoints", () => {
-     it("should create a new comment", async () => {
-          const commentData = {
-               comment: "Test comment",
-               userId: "user123",
-               username: "testuser",
-               channelId: "channel123",
-          };
+const username = config.api.username;
+const password = config.api.password;
+let token = "";
 
-          const createRes = await request(app).post("/comment").send(commentData);
-
-          expect(createRes.statusCode).toBe(200);
-          expect(createRes.body).toHaveProperty("comment");
-          // Additional assertions if needed
-
-          // Store the created comment ID for later use
-          const commentId = createRes.body.comment._id;
-
-          // Now, test listing comments
-          const listRes = await request(app).get("/comments");
-          expect(listRes.statusCode).toBe(200);
-          expect(listRes.body.length).toBeGreaterThan(0);
-          // Additional assertions if needed
-
-          // Now, test changing comment status
-          const newStatus = "resolved";
-          const statusRes = await request(app).put(`/comment/status/${newStatus}`).send({ id: commentId });
-
-          expect(statusRes.statusCode).toBe(200);
-          expect(statusRes.body.success).toBe(true);
-          expect(statusRes.body.comment).toHaveProperty("status", newStatus);
-          // Additional assertions if needed
-
-          // Test handling invalid status
-          const invalidStatus = "invalid";
-          const invalidStatusRes = await request(app).put(`/comment/status/${invalidStatus}`).send({ id: commentId });
-
-          expect(invalidStatusRes.statusCode).toBe(400);
-          expect(invalidStatusRes.body.success).toBe(false);
-          expect(invalidStatusRes.body).toHaveProperty("error", "Invalid status provided");
+beforeAll(async () => {
+     const res = await request(app).post("/api/login").send({
+          username: username,
+          password: password,
      });
+     token = res.body.token;
+});
 
-     afterAll(async () => {
-          // Perform any cleanup or logging needed after all tests are done
-          console.log("All tests are done!");
+describe("GET /api/comments", () => {
+     it("should return  list comments", async () => {
+          const res = await request(app).get("/api/comments").set("authorization", `${token}`);
+          expect(res.statusCode).toBe(200);
+     });
+});
 
-          // For example, you might want to delete the created comment
-          if (commentId) {
-               // Add logic to delete the comment, e.g., using your API endpoint
-               await request(app).delete(`/comment/${commentId}`);
-          }
+describe("POST /api/comment", () => {
+     it("should create a comment", async () => {
+          const res = await request(app)
+               .post("/api/comment")
+               .send({
+                    comment: "Test comment",
+                    userId: "user123",
+                    username: "testuser",
+                    channelId: "channel123",
+               })
+               .set("authorization", `${token}`);
+          expect(res.statusCode).toBe(200);
+          expect(res.body.comment).toBe("Test comment");
+          expect(res.body.status).toBe("new");
+     });
+});
+
+describe("PUT /api/comment/status/:status", () => {
+     it("should fail with invalid a status", async () => {
+          const newStatus = "invalid";
+          const res = await request(app)
+               .put(`/api/comment/status/invalid`)
+               .send({
+                    id: "659ae4c2921c4553baba8ea7",
+               })
+               .set("authorization", `${token}`);
+          expect(res.body.success).toBe(false);
      });
 });

@@ -1,14 +1,14 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const commentRoutes = require("../routers/commentRoutes");
+const authRoutes = require("../routers/authRoutes");
 
 function createServer() {
      const app = express();
 
      app.use(bodyParser.json());
-
-     // Set up routes
      app.use("/api", commentRoutes);
+     app.use("/api", authRoutes);
 
      return app;
 }

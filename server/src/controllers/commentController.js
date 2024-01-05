@@ -1,7 +1,6 @@
 const Comment = require("../models/comment");
 const log4js = require("log4js");
 const logger = log4js.getLogger("default");
-
 exports.createComment = async (req, res) => {
      try {
           const { comment, userId, username, channelId } = req.body;
@@ -45,7 +44,7 @@ exports.changeCommentStatus = async (req, res) => {
           }
 
           // Update comment status using Mongoose
-          const updatedComment = await Comment.findByIdAndUpdate(id, { status }, { new: true });
+          const updatedComment = await Comment.findByIdAndUpdate(id, { status, statusEventTime: new Date() }, { new: true });
 
           if (!updatedComment) {
                // Comment with the given ID not found

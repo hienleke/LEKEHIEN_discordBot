@@ -1,20 +1,22 @@
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const axios = require("axios");
-const path = require("path");
+const config = require("./src//util/config");
+const TK = config.discord.token || "notFound";
+const port = config.app.port || 3000;
+const host = "http://localhost"; //config.get("host.url") ||
+const logger = require("./src/util/logger");
+const isFeedbackValid = require("./src/util/isfeedBackValid");
+
+const username = config.api.username;
+const password = config.api.password;
+
 const client = new Client({
      intents: [GatewayIntentBits.DirectMessages, GatewayIntentBits.Guilds, GatewayIntentBits.GuildBans, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
      partials: [Partials.Channel],
 });
 
-const config = require("config");
-
-const host = config.get("host.url") || "http://localhost"; //config.get("host.url") ||
-const port = config.get("app.port");
-const DISCORD_TOKEN = config.get("discord.token");
-
 client.on("messageCreate", async (message) => {
-     let isFeedback = message.content.trim().split(" ")[0];
-     if (isFeedback == "/feedback") {
+     if (isFeedbackValid(message.content)) {
           const feedback = message.content.slice("/feedback".length).trim();
           const commentData = {
                comment: feedback,
@@ -33,13 +35,24 @@ client.on("messageCreate", async (message) => {
 
 async function submitCommentToBackend(commentData) {
      try {
-          // Make a POST request to the backend API
-          let { data } = await axios.post(`${host}:${port}/api/comment`, commentData);
-          console.log(" data out : ", data);
+          //Get Token
+          let dataToken = await axios.post(`${host}:${port}/api/login`, {
+               username: username,
+               password: password,
+          });
+          let token = dataToken.data.token;
+          if (!token) throw error("Can't not login to get token from discord bot");
+          const config = {
+               headers: { authorization: `${token}` },
+          };
+          //Submit daeta to back end
+          let { data } = await axios.post(`${host}:${port}/api/comment`, commentData, config);
+          logger.info(`Send data feedback: ${JSON.stringify(commentData)} from user ${commentData.userId} in channel ${commentData.channelId}`);
      } catch (error) {
-          console.error("Error submitting comment to backend:", error.message);
-          // Handle the error appropriately (e.g., log, send a message to the user)
+          logger.error("Error submitting comment to backend:", error.message);
+          //Log file to user security
+          logger.error(`Send data feedback: ${JSON.stringify(commentData)} from user ${commentData.userId} in channel ${commentData.channelId}`);
      }
 }
 
-client.login(DISCORD_TOKEN);
+client.login(TK).then(console.log(" bot running "));
